@@ -1,0 +1,23 @@
+# ============================================================
+# 深维地信科技官网 - Render.com 一键部署配置
+# 使用方法：将项目推送到 GitHub，在 Render.com 连接仓库即可
+# 官网：https://render.com
+# ============================================================
+
+services:
+  - type: web
+    name: shendi-website
+    env: node
+    region: singapore
+    buildCommand: npm install && npm run render:build
+    startCommand: npm run render:start
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /opt/render/project/data
+    disk:
+      name: data
+      mountPath: /opt/render/project/data
+      sizeGB: 1

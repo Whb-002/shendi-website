@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>深维地信 - 网站内容管理后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0A0E27;--bg2:#0F1635;--bg3:#162040;--border:#1e2d5a;--text:#E0E6F0;--text2:#8892B0;--accent:#00D4FF;--accent2:#7B2FFF;--warn:#F59E0B;--danger:#EF4444;--success:#10B981;--radius:12px}
+body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* 登录页 */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:48px;width:400px;max-width:100%;text-align:center}
+.login-box h1{font-size:24px;font-weight:700;margin-bottom:8px;background:linear-gradient(90deg,#00D4FF,#7B2FFF);-webkit-background-clip:text;-webkit-background-fill-color:transparent}
+.login-box p{color:var(--text2);font-size:14px;margin-bottom:32px}
+.login-box input{width:100%;padding:14px 18px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;outline:none;margin-bottom:16px;text-align:center;transition:border-color .2s}
+.login-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+.login-box button{width:100%;padding:14px;background:linear-gradient(135deg,#00D4FF,#0099CC);color:#000;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
+.login-box button:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,.3)}
+.login-box .hint{font-size:12px;color:var(--text2);margin-top:12px}
+.login-error{color:var(--danger);font-size:13px;margin-top:8px}
+
+/* 顶部 */
+header{background:linear-gradient(135deg,#0F1635,#162040);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-shrink:0}
+.logo{display:flex;align-items:center;gap:12px;font-weight:700;font-size:16px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#00D4FF,#7B2FFF);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.header-actions{display:flex;gap:10px;align-items:center}
+.btn{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s;font-family:inherit}
+.btn-primary{background:linear-gradient(135deg,#00D4FF,#0099CC);color:#000}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,.3)}
+.btn-secondary{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.3)}
+.btn-secondary:hover{background:rgba(0,212,255,.2)}
+.btn-success{background:linear-gradient(135deg,#10B981,#059669);color:#fff}
+.btn-success:hover{box-shadow:0 4px 20px rgba(16,185,129,.3)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--text2)}
+.save-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+.save-dot.pending{background:var(--warn);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* 主体 */
+.main{display:flex;flex:1;min-height:calc(100vh - 60px)}
+
+/* 左侧 */
+.sidebar{width:210px;background:var(--bg2);border-right:1px solid var(--border);padding:16px 0;flex-shrink:0;overflow-y:auto}
+.nav-item{padding:11px 18px;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text2);transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-item:hover{background:rgba(0,212,255,.05);color:var(--text)}
+.nav-item.active{background:rgba(0,212,255,.1);color:var(--accent);border-left-color:var(--accent)}
+.nav-item .ico{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-div{height:1px;background:var(--border);margin:10px 14px}
+
+/* 内容区 */
+.content{flex:1;padding:28px 36px;overflow-y:auto;max-width:880px}
+.page-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.page-desc{color:var(--text2);font-size:13px;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+
+/* 卡片 */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.tag{background:linear-gradient(135deg,#00D4FF,#0099CC);color:#000;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+
+/* 表单 */
+.fg{margin-bottom:16px}
+.fl{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.5px}
+.fi,.fta,.fsel{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;font-family:inherit;transition:border-color .2s;outline:none}
+.fi:focus,.fta:focus,.fsel:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,.08)}
+.fta{min-height:80px;resize:vertical;line-height:1.6}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+/* 数组项 */
+.item{border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px;background:var(--bg)}
+.item-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.item-name{font-size:13px;font-weight:600;color:var(--accent)}
+.del{background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.2);padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .15s;font-family:inherit}
+.del:hover{background:rgba(239,68,68,.2)}
+
+/* 添加按钮 */
+.add{width:100%;padding:12px;border-radius:8px;background:rgba(0,212,255,.04);border:2px dashed rgba(0,212,255,.25);color:var(--accent);cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit}
+.add:hover{background:rgba(0,212,255,.08);border-color:var(--accent)}
+
+/* Toast */
+.toast{position:fixed;bottom:28px;right:28px;padding:12px 22px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-s{background:linear-gradient(135deg,#10B981,#059669);color:#fff}
+.toast-e{background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff}
+
+/* 发布框 */
+.pub-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-top:24px}
+.pub-title{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.pub-log{background:#000;border-radius:8px;padding:14px;font-family:'Consolas',monospace;font-size:11px;color:#10B981;max-height:180px;overflow-y:auto;line-height:1.9;margin-top:12px}
+
+/* 预览 */
+.prev{background:linear-gradient(135deg,#0A0E27,#1a237e);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;margin-top:16px}
+.prev h2{font-size:28px;font-weight:900;background:linear-gradient(90deg,#00D4FF,#7B2FFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.prev p{color:#8892B0;margin-top:6px;font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginPage" class="login-wrap">
+  <div class="login-box">
+    <div style="font-size:40px;margin-bottom:16px">🌐</div>
+    <h1>深维地信</h1>
+    <p>网站内容管理后台</p>
+    <input type="password" id="pwInput" placeholder="请输入管理员密码" onkeydown="if(event.key==='Enter')doLogin()">
+    <button onclick="doLogin()">登录管理后台</button>
+    <p class="hint">默认密码：admin888 &nbsp;|&nbsp; <a href="#" onclick="showReset();return false" style="color:var(--accent)">重置密码</a></p>
+    <p id="loginErr" class="login-error" style="display:none"></p>
+  </div>
+</div>
+
+<!-- 管理后台 -->
+<div id="adminPage" style="display:none">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🌐</div>
+      <span>深维地信 · 内容管理</span>
+    </div>
+    <div class="header-actions">
+      <span id="saveStatus" style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px"><span class="save-dot"></span>已保存</span>
+      <button class="btn btn-ghost" onclick="previewSite()">👁 预览网站</button>
+      <button class="btn btn-secondary" onclick="downloadJson()">📥 导出数据</button>
+      <button class="btn btn-primary" onclick="saveAll()">💾 保存</button>
+    </div>
+  </header>
+  <div class="main">
+    <nav class="sidebar">
+      <div class="nav-item active" onclick="show('site')"><span class="ico">🏢</span>基本信息</div>
+      <div class="nav-item" onclick="show('hero')"><span class="ico">🎯</span>首页横幅</div>
+      <div class="nav-item" onclick="show('stats')"><span class="ico">📊</span>数字展示</div>
+      <div class="nav-div"></div>
+      <div class="nav-item" onclick="show('about')"><span class="ico">ℹ️</span>关于我们</div>
+      <div class="nav-item" onclick="show('services')"><span class="ico">🛠</span>服务项目</div>
+      <div class="nav-item" onclick="show('news')"><span class="ico">📰</span>新闻资讯</div>
+      <div class="nav-div"></div>
+      <div class="nav-item" onclick="show('partners')"><span class="ico">🤝</span>合作伙伴</div>
+      <div class="nav-item" onclick="show('footer')"><span class="ico">🔗</span>页脚信息</div>
+      <div class="nav-div"></div>
+      <div class="nav-item" onclick="show('deploy')"><span class="ico">🚀</span>一键发布</div>
+    </nav>
+    <div class="content" id="workArea"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== 数据 ==========
+const STORAGE_KEY = 'shendi_content_v1';
+const ADMIN_PW_KEY = 'shendi_admin_pw';
+const DEFAULT_PW = 'admin888';
+
+const DEFAULT_DATA = {
+  site: {
+    name: '深维地信科技(四川)有限公司',
+    shortName: '深维地信',
+    slogan: '深耕地下空间，赋能智慧地球',
+    description: '专注于地质探测、物探设备研发与软件开发的高新技术企业',
+    address: '四川省成都市',
+    phone: '18011072793',
+    contact: '谢经理',
+    email: 'contact@shendi.com',
+    workHours: '周一至周五 9:00 - 18:00'
+  },
+  hero: {
+    title: '深空地信 · 智探未来',
+    tagline: '深度探索地球，智能解读地下',
+    cta: '了解我们的服务'
+  },
+  stats: [
+    { value: '200', label: '服务项目' },
+    { value: '50万', label: '勘查面积（平方公里）' },
+    { value: '500', label: '服务客户' },
+    { value: '80', label: '专利技术' }
+  ],
+  about: {
+    title: '关于我们',
+    subtitle: '用科技丈量大地深度',
+    content: '深维地信科技（四川）有限公司是一家专注于地质探测、物探设备研发与软件开发的高新技术企业...',
+    founded: '2015年',
+    employees: '200+'
+  },
+  services: [
+    { id: 1, name: '矿产资源勘查', icon: 'Mountain', summary: '运用综合物探方法进行固体矿产与能源矿产的勘查评价', category: '地质勘查' },
+    { id: 2, name: '区域地质调查', icon: 'Globe', summary: '开展区域性基础地质调查工作，查明区域地质背景与成矿条件', category: '地质勘查' },
+    { id: 3, name: '地震勘探服务', icon: 'Waves', summary: '提供二维/三维地震数据采集、处理与解释服务', category: '地球物理' },
+    { id: 4, name: '电磁法探测', icon: 'Zap', summary: '采用CSAMT、MT、TEM等多种电磁法进行深部地质结构探测', category: '地球物理' },
+    { id: 5, name: '工程测量服务', icon: 'MapPin', summary: '提供控制测量、地形测量、规划测量等各类工程测量技术服务', category: '测绘地理信息' },
+    { id: 6, name: '遥感与GIS应用', icon: 'Globe', summary: '利用多源遥感影像进行地质解译与地理信息系统建设', category: '测绘地理信息' },
+    { id: 7, name: '地质数据管理平台', icon: 'Code', summary: '基于云架构的地质大数据管理与分析平台', category: '信息系统' },
+    { id: 8, name: '智能监测预警系统', icon: 'Code', summary: '集传感器网络与AI分析于一体的地质灾害实时监测预警平台', category: '信息系统' },
+    { id: 9, name: '水文地质调查', icon: 'Droplets', summary: '查明区域水文地质条件，评价地下水资源量与环境风险', category: '环境地质' },
+    { id: 10, name: '岩土工程检测', icon: 'Building2', summary: '提供地基承载力检测、桩基完整性检测等服务', category: '工程检测' },
+    { id: 11, name: '矿山地质环境评估', icon: 'Droplets', summary: '开展矿山地质环境调查与生态修复方案编制', category: '环境地质' },
+    { id: 12, name: '工程物探检测', icon: 'Building2', summary: '运用地质雷达、超声波、高密度电法等进行工程结构无损检测', category: '工程检测' }
+  ],
+  news: [
+    { id: 1, title: '公司中标国家地质调查局重大项目', summary: '凭借雄厚技术实力成功中标国家地质调查局深地资源探测技术装备研发重大项目', category: 'company', categoryLabel: '公司新闻', publishDate: '2025-05-20', viewCount: 1280 },
+    { id: 2, title: '公司获得国家高新技术企业认证', summary: '经过严格评审，我司顺利通过国家高新技术企业认定，标志着公司技术创新能力获得国家级认可', category: 'company', categoryLabel: '公司新闻', publishDate: '2025-04-15', viewCount: 956 },
+    { id: 3, title: '2025年地球物理勘查行业市场分析', summary: '据行业研究报告显示，AI+物探技术将成为未来矿产资源勘查的核心驱动力', category: 'industry', categoryLabel: '行业资讯', publishDate: '2025-03-28', viewCount: 2340 },
+    { id: 4, title: '关于2025年安全生产月活动安排的通知', summary: '公司决定于6月开展安全生产月系列活动，请各部门提前做好准备', category: 'notice', categoryLabel: '通知公告', publishDate: '2025-05-25', viewCount: 450 },
+    { id: 5, title: '公司荣获年度地质科技十大进展奖', summary: '自主研发的智能化深地电磁探测系统荣获年度地质科技十大进展奖', category: 'company', categoryLabel: '公司新闻', publishDate: '2025-02-10', viewCount: 1876 },
+    { id: 6, title: '我国地球物理勘查行业市场规模突破500亿元', summary: '2025年我国地球物理勘查行业市场规模预计突破500亿元', category: 'industry', categoryLabel: '行业资讯', publishDate: '2025-01-18', viewCount: 3100 }
+  ],
+  partners: [
+    '中国地质调查局', '中国石油天然气集团', '中国矿业大学', '中国地质大学',
+    '中科院地球物理研究所', '四川省地质矿产局', '中国有色金属工业协会', '成都理工大学'
+  ],
+  footer: {
+    services: ['地球物理探测', '软件产品', '物探设备', '数据处理', '技术咨询', '培训服务'],
+    quickLinks: ['关于我们', '新闻中心', '产品与服务', '在线业务']
+  }
+};
+
+let D = {};
+let cur = 'site';
+let saved = true;
+
+// ========== 初始化 ==========
+function doLogin() {
+  const pw = document.getElementById('pwInput').value;
+  const stored = localStorage.getItem(ADMIN_PW_KEY) || DEFAULT_PW;
+  if (pw === stored) {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminPage').style.display = 'block';
+    init();
+  } else {
+    document.getElementById('loginErr').textContent = '密码错误，请重试';
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function showReset() {
+  const pw = prompt('请输入新的管理员密码：');
+  if (pw && pw.length >= 4) {
+    localStorage.setItem(ADMIN_PW_KEY, pw);
+    alert('密码已修改为：' + pw + '\n\n下次登录请使用新密码');
+  }
+}
+
+function init() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  D = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_DATA));
+  show('site');
+}
+
+function show(name) {
+  cur = name;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[onclick="show('${name}')"]`).classList.add('active');
+  const w = document.getElementById('workArea');
+  switch(name) {
+    case 'site': w.innerHTML = tplSite(); break;
+    case 'hero': w.innerHTML = tplHero(); break;
+    case 'stats': w.innerHTML = tplStats(); break;
+    case 'about': w.innerHTML = tplAbout(); break;
+    case 'services': w.innerHTML = tplServices(); break;
+    case 'news': w.innerHTML = tplNews(); break;
+    case 'partners': w.innerHTML = tplPartners(); break;
+    case 'footer': w.innerHTML = tplFooter(); break;
+    case 'deploy': w.innerHTML = tplDeploy(); break;
+  }
+}
+
+// ========== 保存 ==========
+function dirty() {
+  saved = false;
+  document.getElementById('saveStatus').innerHTML = '<span class="save-dot pending"></span>未保存';
+}
+function saveAll() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(D));
+  saved = true;
+  document.getElementById('saveStatus').innerHTML = '<span class="save-dot"></span>已保存';
+  toast('💾 已保存到本地浏览器', 's');
+}
+
+// ========== 下载 ==========
+function downloadJson() {
+  saveAll();
+  const blob = new Blob([JSON.stringify(D, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'content.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('📥 content.json 已下载', 's');
+}
+
+function previewSite() {
+  saveAll();
+  window.open('./', '_blank');
+}
+
+// ========== Toast ==========
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.className = 'toast toast-' + type;
+  t.innerHTML = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ========== 模板函数 ==========
+const e = s => (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const ln = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(D));
+
+// ========== 各板块模板 ==========
+function tplSite() {
+  const s = D.site || {};
+  return `<h2 class="page-title">🏢 基本信息</h2>
+<p class="page-desc">修改公司名称、联系方式等，这些内容会显示在导航栏、页脚等位置。</p>
+<div class="card">
+  <div class="frow">
+    <div class="fg"><label class="fl">公司全称</label><input class="fi" value="${e(s.name)}" oninput="D.site.name=this.value;dirty()"></div>
+    <div class="fg"><label class="fl">简称</label><input class="fi" value="${e(s.shortName)}" oninput="D.site.shortName=this.value;dirty()"></div>
+  </div>
+  <div class="fg"><label class="fl">公司标语</label><input class="fi" value="${e(s.slogan)}" oninput="D.site.slogan=this.value;dirty()"></div>
+  <div class="fg"><label class="fl">公司简介</label><textarea class="fta" oninput="D.site.description=this.value;dirty()">${e(s.description)}</textarea></div>
+  <div class="frow">
+    <div class="fg"><label class="fl">联系电话</label><input class="fi" value="${e(s.phone)}" oninput="D.site.phone=this.value;dirty()"></div>
+    <div class="fg"><label class="fl">联系人</label><input class="fi" value="${e(s.contact)}" oninput="D.site.contact=this.value;dirty()"></div>
+  </div>
+  <div class="frow">
+    <div class="fg"><label class="fl">邮箱</label><input class="fi" value="${e(s.email)}" oninput="D.site.email=this.value;dirty()"></div>
+    <div class="fg"><label class="fl">工作时间</label><input class="fi" value="${e(s.workHours)}" oninput="D.site.workHours=this.value;dirty()"></div>
+  </div>
+  <div class="fg"><label class="fl">公司地址</label><input class="fi" value="${e(s.address)}" oninput="D.site.address=this.value;dirty()"></div>
+</div>`;
+}
+
+function tplHero() {
+  const h = D.hero || {};
+  return `<h2 class="page-title">🎯 首页横幅</h2>
+<p class="page-desc">修改首页顶部大图区域的大标题、副标题和按钮文字。</p>
+<div class="card">
+  <div class="fg"><label class="fl">主标题</label><input class="fi" value="${e(h.title)}" oninput="D.hero.title=this.value;dirty()" style="font-size:18px;font-weight:700"></div>
+  <div class="fg"><label class="fl">副标题</label><input class="fi" value="${e(h.tagline)}" oninput="D.hero.tagline=this.value;dirty()"></div>
+  <div class="fg"><label class="fl">按钮文字</label><input class="fi" value="${e(h.cta)}" oninput="D.hero.cta=this.value;dirty()"></div>
+</div>
+<div class="prev">
+  <p style="color:#8892B0;font-size:12px;margin-bottom:8px">— 实时预览 —</p>
+  <h2>${e(h.title)}</h2>
+  <p>${e(h.tagline)}</p>
+  <button style="margin-top:16px;padding:8px 24px;background:linear-gradient(135deg,#00D4FF,#0099CC);color:#000;border:none;border-radius:8px;font-weight:700">${e(h.cta)}</button>
+</div>`;
+}
+
+function tplStats() {
+  const items = (D.stats||[]).map((s,i) => `
+  <div class="item">
+    <div class="item-head">
+      <span class="item-name">第 ${i+1} 项</span>
+      <button class="del" onclick="D.stats.splice(${i},1);ln();show('stats')">🗑 删除</button>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">数值</label><input class="fi" value="${e(s.value)}" oninput="D.stats[${i}].value=this.value;dirty()"></div>
+      <div class="fg"><label class="fl">说明文字</label><input class="fi" value="${e(s.label)}" oninput="D.stats[${i}].label=this.value;dirty()"></div>
+    </div>
+  </div>`).join('');
+  return `<h2 class="page-title">📊 数字展示</h2>
+<p class="page-desc">修改首页显示的公司核心数据。点击数字可直接编辑。</p>
+${items}
+<button class="add" onclick="D.stats.push({value:'0',label:'新数据项'});ln();show('stats')">➕ 添加数据项</button>`;
+}
+
+function tplAbout() {
+  const a = D.about || {};
+  return `<h2 class="page-title">ℹ️ 关于我们</h2>
+<p class="page-desc">修改关于页面的公司介绍内容。</p>
+<div class="card">
+  <div class="frow">
+    <div class="fg"><label class="fl">页面标题</label><input class="fi" value="${e(a.title)}" oninput="D.about.title=this.value;dirty()"></div>
+    <div class="fg"><label class="fl">副标题</label><input class="fi" value="${e(a.subtitle)}" oninput="D.about.subtitle=this.value;dirty()"></div>
+  </div>
+  <div class="fg"><label class="fl">公司介绍（长文本）</label><textarea class="fta" style="min-height:160px" oninput="D.about.content=this.value;dirty()">${e(a.content)}</textarea></div>
+  <div class="frow">
+    <div class="fg"><label class="fl">成立年份</label><input class="fi" value="${e(a.founded)}" oninput="D.about.founded=this.value;dirty()"></div>
+    <div class="fg"><label class="fl">员工规模</label><input class="fi" value="${e(a.employees)}" oninput="D.about.employees=this.value;dirty()"></div>
+  </div>
+</div>`;
+}
+
+function tplServices() {
+  const items = (D.services||[]).map((s,i) => `
+  <div class="item">
+    <div class="item-head">
+      <span class="item-name">${e(s.name)} <span style="color:var(--text2);font-weight:400;font-size:12px"> — ${e(s.category)}</span></span>
+      <button class="del" onclick="D.services.splice(${i},1);ln();show('services')">🗑 删除</button>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">服务名称</label><input class="fi" value="${e(s.name)}" oninput="D.services[${i}].name=this.value;dirty()"></div>
+      <div class="fg"><label class="fl">分类</label><input class="fi" value="${e(s.category)}" oninput="D.services[${i}].category=this.value;dirty()"></div>
+    </div>
+    <div class="fg"><label class="fl">简短描述</label><textarea class="fta" style="min-height:60px" oninput="D.services[${i}].summary=this.value;dirty()">${e(s.summary)}</textarea></div>
+  </div>`).join('');
+  return `<h2 class="page-title">🛠 服务项目</h2>
+<p class="page-desc">管理公司提供的服务列表，这些会显示在首页服务和详情页。</p>
+${items}
+<button class="add" onclick="D.services.push({id:Date.now(),name:'新服务名称',icon:'Mountain',summary:'服务描述...',category:'地质勘查'});ln();show('services')">➕ 添加服务</button>`;
+}
+
+function tplNews() {
+  const items = (D.news||[]).map((n,i) => `
+  <div class="item">
+    <div class="item-head">
+      <span class="item-name">${e(n.title)}</span>
+      <button class="del" onclick="D.news.splice(${i},1);ln();show('news')">🗑 删除</button>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="fl">新闻标题</label><input class="fi" value="${e(n.title)}" oninput="D.news[${i}].title=this.value;dirty()"></div>
+      <div class="fg"><label class="fl">分类</label><input class="fi" value="${e(n.categoryLabel)}" oninput="D.news[${i}].categoryLabel=this.value;dirty()"></div>
+    </div>
+    <div class="fg"><label class="fl">摘要</label><textarea class="fta" oninput="D.news[${i}].summary=this.value;dirty()">${e(n.summary)}</textarea></div>
+    <div class="frow">
+      <div class="fg"><label class="fl">发布日期</label><input class="fi" type="date" value="${e(n.publishDate)}" oninput="D.news[${i}].publishDate=this.value;dirty()"></div>
+      <div class="fg"><label class="fl">浏览量</label><input class="fi" type="number" value="${n.viewCount||0}" oninput="D.news[${i}].viewCount=parseInt(this.value);dirty()"></div>
+    </div>
+  </div>`).join('');
+  return `<h2 class="page-title">📰 新闻资讯</h2>
+<p class="page-desc">管理新闻列表，支持公司新闻、行业资讯、通知公告三种分类。</p>
+${items}
+<button class="add" onclick="D.news.unshift({id:Date.now(),title:'新闻标题',summary:'新闻摘要...',category:'company',categoryLabel:'公司新闻',publishDate:'${new Date().toISOString().slice(0,10)}',viewCount:0});ln();show('news')">➕ 添加新闻</button>`;
+}
+
+function tplPartners() {
+  const items = (D.partners||[]).map((p,i) => `
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px">
+    <input class="fi" value="${e(p)}" oninput="D.partners[${i}]=this.value;dirty()" style="flex:1">
+    <button class="del" onclick="D.partners.splice(${i},1);ln();show('partners')">🗑</button>
+  </div>`).join('');
+  return `<h2 class="page-title">🤝 合作伙伴</h2>
+<p class="page-desc">管理合作伙伴名称列表。</p>
+<div class="card">${items}</div>
+<button class="add" onclick="D.partners.push('新合作伙伴');ln();show('partners')">➕ 添加伙伴</button>`;
+}
+
+function tplFooter() {
+  const f = D.footer||{};
+  const svcs = (f.services||[]).map((v,i) => `<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><input class="fi" value="${e(v)}" oninput="D.footer.services[${i}]=this.value;dirty()" style="flex:1"><button class="del" onclick="D.footer.services.splice(${i},1);ln();show('footer')">🗑</button></div>`).join('');
+  const ql = (f.quickLinks||[]).map((v,i) => `<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><input class="fi" value="${e(v)}" oninput="D.footer.quickLinks[${i}]=this.value;dirty()" style="flex:1"><button class="del" onclick="D.footer.quickLinks.splice(${i},1);ln();show('footer')">🗑</button></div>`).join('');
+  return `<h2 class="page-title">🔗 页脚信息</h2>
+<p class="page-desc">修改网站底部显示的服务项目链接和快速链接。</p>
+<div class="card"><div class="card-title"><span class="tag">1</span>服务项目链接</div>${svcs}</div>
+<div class="card" style="margin-top:14px"><div class="card-title"><span class="tag">2</span>快速链接</div>${ql}</div>
+<button class="add" style="margin-top:14px" onclick="if(!D.footer)D.footer={};if(!D.footer.services)D.footer.services=[];D.footer.services.push('新服务');ln();show('footer')">➕ 添加页脚服务</button>`;
+}
+
+function tplDeploy() {
+  return `<h2 class="page-title">🚀 一键发布</h2>
+<p class="page-desc">将修改后的内容同步到线上网站。修改内容保存在本地浏览器中，需要推送到 GitHub 才能生效。</p>
+
+<div class="card" style="border-color:var(--accent)">
+  <div class="card-title"><span class="tag">�</span>一键发布</div>
+  <div style="text-align:center;padding:20px">
+    <button class="btn btn-success" style="padding:12px 40px;font-size:16px" onclick="startDeploy()">
+      🚀 一键发布网站
+    </button>
+    <p style="color:var(--text2);font-size:12px;margin-top:12px">点击后自动构建并推送到 GitHub</p>
+  </div>
+  <div class="pub-log" id="deployLog" style="margin-top:16px">点击上方按钮开始发布...</div>
+</div>
+
+<div class="card">
+  <div class="card-title"><span class="tag">�</span>手动发布步骤</div>
+  <div style="font-size:13px;color:var(--text2);line-height:2.2">
+    <p><strong style="color:var(--accent)">第一步：</strong>在左侧各板块修改完内容后，点击顶部 <strong style="color:#fff">💾 保存</strong> 按钮</p>
+    <p><strong style="color:var(--accent)">第二步：</strong>点击顶部 <strong style="color:#fff">📥 导出数据</strong> 按钮，下载 <code style="background:var(--bg3);padding:1px 6px;border-radius:4px">content.json</code> 文件</p>
+    <p><strong style="color:var(--accent)">第三步：</strong>把下载的 <code style="background:var(--bg3);padding:1px 6px;border-radius:4px">content.json</code> <strong style="color:#fff">复制到项目根目录的 <code style="background:var(--bg3);padding:1px 6px;border-radius:4px">public/</code> 文件夹里</strong>（替换原文件）</p>
+    <p><strong style="color:var(--accent)">第四步：</strong>在 VSCode 终端运行：<br>
+    <code style="background:#000;padding:4px 10px;border-radius:6px;display:block;margin-top:4px">npx vite build</code><br>
+    <code style="background:#000;padding:4px 10px;border-radius:6px;display:block;margin-top:4px">node github-pages.cjs</code></p>
+  </div>
+</div>
+
+<div class="pub-box">
+  <div class="pub-title">💡 提示</div>
+  <div style="font-size:13px;color:var(--text2);line-height:2">
+    <p>• 修改内容保存在浏览器 localStorage 中，断开网络也能编辑</p>
+    <p>• 导出 content.json 是为了永久保存修改记录</p>
+    <p>• 推送到 GitHub 后，网站约 1-2 分钟自动更新</p>
+    <p>• 如果只需要临时预览，可点击 <strong style="color:var(--accent)">👁 预览网站</strong>，但刷新后恢复</p>
+    <p>• 管理员密码默认是 <code style="background:var(--bg3);padding:1px 6px;border-radius:4px">admin888</code>，可在登录页点击「重置密码」修改</p>
+  </div>
+</div>`;
+}
+
+// ========== 一键发布 ==========
+async function startDeploy() {
+  const logEl = document.getElementById('deployLog');
+  if (!logEl) return;
+  
+  logEl.textContent = '🚀 开始发布...\n\n';
+  
+  try {
+    const resp = await fetch('http://localhost:5174/deploy', { method: 'POST' });
+    if (!resp.ok) throw new Error('部署服务未启动');
+    
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      logEl.textContent += decoder.decode(value);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    
+    toast('🎉 发布成功！', 's');
+  } catch (error) {
+    logEl.textContent += `❌ 错误：部署服务未启动\n\n请先在终端运行：\nnode deploy-server.js\n\n然后刷新此页面再试。`;
+    toast('⚠️ 请先启动部署服务', 'e');
+  }
+}
+
+// ========== 自动登录检查 ==========
+(function checkLogin() {
+  const stored = localStorage.getItem(ADMIN_PW_KEY) || DEFAULT_PW;
+  // 不自动登录，必须输入密码
+})();
+</script>
+</body>
+</html>

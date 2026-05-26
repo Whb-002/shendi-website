@@ -1,0 +1,45 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vite
+
+# Runtime database
+api/db/data.json
+api/db/company.db
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.spec
+
+# Project data files (large / private)
+基点Ta计算和修正/
+高密度电法原始数据反算/
+MagExplorer/
+知识库开发教材/
+.trae/
+run_clean_c_drive.bat
+run_clean_c_drive_dry.bat
+clean_c_drive.ps1
